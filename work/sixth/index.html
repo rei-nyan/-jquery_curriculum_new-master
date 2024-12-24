@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -9,6 +10,7 @@
   <link rel="stylesheet" href="./css/style.css">
   <title>Document</title>
 </head>
+
 <body>
   <div class="wrapper" id="wrapper">
     <button type="button" class="btn search-btn" id="pokemon_search">ポケモンを探す</button>
@@ -16,6 +18,77 @@
   <script src="../../common/js/jquery.js"></script>
   <script>
     // 回答はここに書いてね
+    $(function () {
+      // 「ポケモンを探す」後の画面表示
+      $(document).on('click','#pokemon_search',function () {
+        let pokemonid = Math.floor(Math.random() * 151) + 1;
+        $.ajax({
+          url: `https://pokeapi.co/api/v2/pokemon/${pokemonid}`,
+          method: 'GET'
+        }).done(function (res) {
+          let img = (res.sprites.front_default);
+          $.ajax({
+            url: res.species.url,
+            method: 'GET'
+            }).done(function (res) {
+              
+            let encountHtml =
+              `
+                <p class="name">${res.names[0].name}</p>
+                <div>
+                  <img class="img" src="${img}" alt="">
+                </div>
+                <div>
+                  <button class="btn" id="catch">捕まえる</button>
+                  <button class="btn" data-js="reset">逃げる</button>
+                </div>
+              `
+            $('#wrapper').html(encountHtml);
+          }).fail(function (err) {
+          });
+        }).fail(function (err) {
+        });
+      });
+      // 捕まえた場合の処理
+      $(document).on('click', '#catch', function () {
+        $.ajax({
+          url: 'https://pokeapi.co/api/v2/item/4',
+          method: 'GET'
+        }).done(function (res) {
+          let doneHtml =
+            `
+              <p class="name">ゲットしました</p>
+              <div>
+                <img class="img" src="" alt="">
+              </div>
+                <button class="btn" data-js="reset">戻る</button>
+            `
+          let failHtml =
+            `
+              <p class="text">逃げられてしまった...</p>
+                <button class="btn mt" data-js="reset">戻る</button>
+            `
+            // 50%の確率で成功失敗を分岐
+            var success = Math.random() < 0.5;
+            if (success) {
+              $('.wrapper').html(doneHtml);
+              $('img').attr('src', res.sprites.default);
+            } else {
+                $('.wrapper').html(failHtml);
+            }
+          });
+        });
+        // 戻るボタンのクリック処理
+        $(document).on('click', '[data-js="reset"]', function(){
+
+          $('#wrapper').html('<button type="button" class="btn search-btn" id="pokemon_search">ポケモンを探す</button>');
+        });
+
+
+
+    });
+
   </script>
 </body>
+
 </html>
